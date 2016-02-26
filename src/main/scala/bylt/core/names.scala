@@ -2,6 +2,10 @@ package bylt.core
 
 
 case class Name (parts : Vector [String]) {
+
+    def -> [T](other : T) : (Name, T) =
+        (this, other)
+
     def / (nextName : Name) : QName =
         QName (Vector (this), nextName)
 

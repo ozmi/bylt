@@ -24,3 +24,5 @@ sealed abstract class Type
     case class RestrictedType (base : Type, predicate : Expr) extends Type
 
     case class StructuralType (fields : Vector [(Name, Type)]) extends Type
+
+    case class TemporalType (elem : Type) extends Type

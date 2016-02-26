@@ -101,6 +101,17 @@ object Arbitrary {
             predicate <- exprGen (depth)
         } yield RestrictedType (base, predicate)
 
+    def structuralTypeGen (depth : Int) : Gen [StructuralType] = {
+        val fieldGen =
+            for {
+                name <- nameGen
+                tpe <- typeGen (depth)
+            } yield (name, tpe)
+
+        for (fields <- Gen.nonEmptyListOf (fieldGen))
+            yield StructuralType (fields.toVector)
+    }
+
     def typeGen (depth : Int) : Gen [Type] =
         if (depth > 1) {
             Gen.frequency (

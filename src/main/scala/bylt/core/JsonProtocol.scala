@@ -69,7 +69,7 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case TupleType (elems) =>
                     JsObject ("TupleType" -> JsArray (Vector (elems.toJson)))
                 case RecordType (fields) =>
-                    val jsFields = JsArray (fields map {case (name, tpe) => JsArray (Vector (name.toJson, tpe.toJson))})
+                    val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
                     JsObject ("RecordType" -> JsArray (Vector (jsFields)))
                 case TaggedUnionType (cases) =>
                     val map = JsObject (cases.toSeq map {case (key, value) => key.toString -> value.toJson} : _*)
@@ -80,6 +80,9 @@ object JsonProtocol extends DefaultJsonProtocol {
                     JsObject ("ManyType" -> JsArray (Vector (elem.toJson)))
                 case RestrictedType (base, predicate) =>
                     JsObject ("RestrictedType" -> JsArray (Vector (base.toJson, predicate.toJson)))
+                case StructuralType (fields) =>
+                    val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
+                    JsObject ("StructuralType" -> JsArray (Vector (jsFields)))
             }
         def read (value : JsValue) =
             value match {
@@ -110,6 +113,9 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case JsObject (fields) if fields contains "RestrictedType" =>
                     val JsArray (Vector (base, predicate)) = fields ("RestrictedType")
                     RestrictedType (base.convertTo [Type], predicate.convertTo [Expr])
+                case JsObject (fields) if fields contains "StructuralType" =>
+                    val JsArray (Vector (JsArray (jsFields))) = fields ("StructuralType")
+                    StructuralType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [Type])})
             }
     }
 

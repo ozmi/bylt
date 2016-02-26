@@ -11,6 +11,10 @@ sealed abstract class Type
         case class RecordType (fields : Vector [(Name, Type)]) extends ProductType
 
     case class TaggedUnionType (cases : Map [Name, Type]) extends Type
+    object TaggedUnionType {
+        def enum (values : UnitType*) : TaggedUnionType =
+            TaggedUnionType ((values map {tpe => tpe.value.name -> tpe}).toMap)
+    }
 
     case class OptionType (elem : Type) extends Type
     case class ManyType (elem : Type) extends Type

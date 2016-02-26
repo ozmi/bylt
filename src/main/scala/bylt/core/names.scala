@@ -2,6 +2,9 @@ package bylt.core
 
 
 case class Name (parts : Vector [String]) {
+    def / (nextName : Name) : QName =
+        QName (Vector (this), nextName)
+
     override def toString =
         parts mkString "_"
 }
@@ -10,15 +13,13 @@ object Name {
     def fromString (name : String) : Name =
         Name (name.split ("\\_").toVector)
 
-    import scala.language.implicitConversions
-
-    implicit def fromSymbol (sym : Symbol) : Name =
-        Name ((sym.name.split ("\\_") map {_.toLowerCase}).toVector)
-
 }
 
 
 case class QName (ns : Vector [Name], name : Name) {
+    def / (nextName : Name) : QName =
+        QName (ns :+ name, nextName)
+
     override def toString =
         (ns :+ name) mkString "/"
 }

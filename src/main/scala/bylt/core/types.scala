@@ -2,6 +2,8 @@ package bylt.core
 
 sealed abstract class Type
 
+    case class TypeRef (qname : QName) extends Type
+
     case class TopType () extends Type
     case class BottomType () extends Type
     case class UnitType (value : QName) extends Type
@@ -17,7 +19,7 @@ sealed abstract class Type
     }
 
     case class OptionType (elem : Type) extends Type
-    case class ManyType (elem : Type) extends Type
+    case class ManyType (elem : Type, sequential : Boolean = false, unique : Boolean = false) extends Type
 
     case class RestrictedType (base : Type, predicate : Expr) extends Type
 

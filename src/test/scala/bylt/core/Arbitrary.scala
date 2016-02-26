@@ -61,6 +61,9 @@ object Arbitrary {
 
     // Types
 
+    lazy val typeRefGen : Gen [TypeRef] =
+        for (qname <- qnameGen) yield TypeRef (qname)
+
     lazy val unitTypeGen : Gen [UnitType] =
         for (qname <- qnameGen) yield UnitType (qname)
 
@@ -93,7 +96,11 @@ object Arbitrary {
         for (elem <- typeGen (depth)) yield OptionType (elem)
 
     def manyTypeGen (depth : Int) : Gen [ManyType] =
-        for (elem <- typeGen (depth)) yield ManyType (elem)
+        for {
+            elem <- typeGen (depth)
+            sequential <- Gen.oneOf (true, false)
+            unique <- Gen.oneOf (true, false)
+        } yield ManyType (elem, sequential, unique)
 
     def restrictedTypeGen (depth : Int) : Gen [RestrictedType] =
         for {
@@ -115,6 +122,7 @@ object Arbitrary {
     def typeGen (depth : Int) : Gen [Type] =
         if (depth > 1) {
             Gen.frequency (
+                3 -> typeRefGen,
                 1 -> Gen.const (TopType ()),
                 1 -> Gen.const (BottomType ()),
                 3 -> unitTypeGen,
@@ -127,6 +135,7 @@ object Arbitrary {
             )
         } else {
             Gen.frequency (
+                3 -> typeRefGen,
                 1 -> Gen.const (TopType ()),
                 1 -> Gen.const (BottomType ()),
                 3 -> unitTypeGen

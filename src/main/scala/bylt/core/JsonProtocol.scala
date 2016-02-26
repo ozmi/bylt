@@ -60,6 +60,8 @@ object JsonProtocol extends DefaultJsonProtocol {
     implicit object TypeFormat extends RootJsonFormat[Type] {
         def write (tpe : Type) =
             tpe match {
+                case TypeRef (qname) =>
+                    JsObject ("TypeRef" -> JsArray (Vector (qname.toJson)))
                 case TopType () =>
                     JsObject ("TopType" -> JsArray ())
                 case BottomType () =>
@@ -76,8 +78,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                     JsObject ("TaggedUnionType" -> JsArray (Vector (map)))
                 case OptionType (elem) =>
                     JsObject ("OptionType" -> JsArray (Vector (elem.toJson)))
-                case ManyType (elem) =>
-                    JsObject ("ManyType" -> JsArray (Vector (elem.toJson)))
+                case ManyType (elem, sequential, unique) =>
+                    JsObject ("ManyType" -> JsArray (Vector (elem.toJson, sequential.toJson, unique.toJson)))
                 case RestrictedType (base, predicate) =>
                     JsObject ("RestrictedType" -> JsArray (Vector (base.toJson, predicate.toJson)))
                 case StructuralType (fields) =>
@@ -86,6 +88,9 @@ object JsonProtocol extends DefaultJsonProtocol {
             }
         def read (value : JsValue) =
             value match {
+                case JsObject (fields) if fields contains "TypeRef" =>
+                    val JsArray (Vector (qname)) = fields ("TypeRef")
+                    TypeRef (qname.convertTo [QName])
                 case JsObject (fields) if fields contains "TopType" =>
                     val JsArray (Vector ()) = fields ("TopType")
                     TopType ()
@@ -108,8 +113,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                     val JsArray (Vector (elem)) = fields ("OptionType")
                     OptionType (elem.convertTo [Type])
                 case JsObject (fields) if fields contains "ManyType" =>
-                    val JsArray (Vector (elem)) = fields ("ManyType")
-                    ManyType (elem.convertTo [Type])
+                    val JsArray (Vector (elem, JsBoolean (sequential), JsBoolean (unique))) = fields ("ManyType")
+                    ManyType (elem.convertTo [Type], sequential, unique)
                 case JsObject (fields) if fields contains "RestrictedType" =>
                     val JsArray (Vector (base, predicate)) = fields ("RestrictedType")
                     RestrictedType (base.convertTo [Type], predicate.convertTo [Expr])

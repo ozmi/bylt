@@ -5,6 +5,6 @@ object Boolean {
 
     val True = UnitType ('boolean / 'true)
     val False = UnitType ('boolean / 'false)
-    val Type = TaggedUnionType.enum (True, False)
+    val Boolean = TaggedUnionType.enum (True, False)
 
 }

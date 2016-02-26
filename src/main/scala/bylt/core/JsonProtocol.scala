@@ -85,6 +85,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case StructuralType (fields) =>
                     val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
                     JsObject ("StructuralType" -> JsArray (Vector (jsFields)))
+                case TemporalType (elem) =>
+                    JsObject ("TemporalType" -> JsArray (Vector (elem.toJson)))
             }
         def read (value : JsValue) =
             value match {
@@ -121,6 +123,9 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case JsObject (fields) if fields contains "StructuralType" =>
                     val JsArray (Vector (JsArray (jsFields))) = fields ("StructuralType")
                     StructuralType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [Type])})
+                case JsObject (fields) if fields contains "TemporalType" =>
+                    val JsArray (Vector (elem)) = fields ("TemporalType")
+                    TemporalType (elem.convertTo [Type])
             }
     }
 

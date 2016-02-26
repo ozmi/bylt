@@ -119,6 +119,9 @@ object Arbitrary {
             yield StructuralType (fields.toVector)
     }
 
+    def temporalTypeGen (depth : Int) : Gen [TemporalType] =
+        for (elem <- typeGen (depth)) yield TemporalType (elem)
+
     def typeGen (depth : Int) : Gen [Type] =
         if (depth > 1) {
             Gen.frequency (
@@ -131,7 +134,8 @@ object Arbitrary {
                 7 -> taggedUnionTypeGen (depth - 1),
                 10 -> optionTypeGen (depth - 1),
                 10 -> manyTypeGen (depth - 1),
-                4 -> restrictedTypeGen (depth - 1)
+                4 -> restrictedTypeGen (depth - 1),
+                2 -> temporalTypeGen (depth - 1)
             )
         } else {
             Gen.frequency (

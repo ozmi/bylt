@@ -13,7 +13,7 @@ object Name {
     import scala.language.implicitConversions
 
     implicit def fromSymbol (sym : Symbol) : Name =
-        Name (sym.name.split ("\\_") map {_.toLowerCase} toVector)
+        Name ((sym.name.split ("\\_") map {_.toLowerCase}).toVector)
 
 }
 

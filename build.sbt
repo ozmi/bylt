@@ -4,6 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.7"
 
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+
 // --- Dependencies ---
 resolvers ++= Seq (
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",

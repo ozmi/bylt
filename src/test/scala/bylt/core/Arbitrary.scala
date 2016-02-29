@@ -151,4 +151,44 @@ object Arbitrary {
     }
 
     lazy val tpe = org.scalacheck.Arbitrary (typeGen)
+
+    def moduleGen (depth : Int) : Gen [Module] = {
+        val moduleFieldGen =
+            for {
+                name <- nameGen
+                module <- moduleGen (depth - 1)
+            } yield (name, module)
+
+        val typeFieldGen =
+            for {
+                name <- nameGen
+                tpe <- typeGen (depth - 1)
+            } yield (name, tpe)
+
+        val exprFieldGen =
+            for {
+                name <- nameGen
+                expr <- exprGen (depth - 1)
+            } yield (name, expr)
+
+        if (depth > 1) {
+            for {
+                modules <- Gen.listOf (moduleFieldGen)
+                types <- Gen.listOf (typeFieldGen)
+                exprs <- Gen.listOf (exprFieldGen)
+            } yield Module (modules.toMap, types.toMap, exprs.toMap)
+        } else {
+            for {
+                types <- Gen.listOf (typeFieldGen)
+                exprs <- Gen.listOf (exprFieldGen)
+            } yield Module (Map.empty, types.toMap, exprs.toMap)
+        }
+    }
+
+    def moduleGen  : Gen [Module] = Gen.sized { size =>
+        moduleGen (size / 20)
+    }
+
+    lazy val module = org.scalacheck.Arbitrary (moduleGen)
+
 }

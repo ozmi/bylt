@@ -1,6 +1,5 @@
 package bylt.core
 
-
 case class Name (parts : Vector [String]) {
 
     def -> [T](other : T) : (Name, T) =
@@ -11,6 +10,7 @@ case class Name (parts : Vector [String]) {
 
     override def toString =
         parts mkString "_"
+
 }
 object Name {
 
@@ -21,11 +21,13 @@ object Name {
 
 
 case class QName (ns : Vector [Name], name : Name) {
+
     def / (nextName : Name) : QName =
         QName (ns :+ name, nextName)
 
     override def toString =
         (ns :+ name) mkString "/"
+
 }
 object QName {
 

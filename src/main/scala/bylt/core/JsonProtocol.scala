@@ -5,9 +5,9 @@ import spray.json._
 object JsonProtocol extends DefaultJsonProtocol {
 
     implicit object NameFormat extends RootJsonFormat[Name] {
-        def write (name : Name) =
+        def write (name : Name) : JsValue =
             JsString (name.toString)
-        def read (value : JsValue) =
+        def read (value : JsValue) : Name =
             value match {
                 case JsString (name) =>
                     Name.fromString (name)
@@ -17,9 +17,9 @@ object JsonProtocol extends DefaultJsonProtocol {
     }
 
     implicit object QNameFormat extends RootJsonFormat[QName] {
-        def write (qname : QName) =
+        def write (qname : QName) : JsValue =
             JsString (qname.toString)
-        def read (value : JsValue) =
+        def read (value : JsValue) : QName =
             value match {
                 case JsString (qname) =>
                     QName.fromString (qname)
@@ -29,7 +29,7 @@ object JsonProtocol extends DefaultJsonProtocol {
     }
 
     implicit object ExprFormat extends RootJsonFormat[Expr] {
-        def write (expr : Expr) =
+        def write (expr : Expr) : JsValue =
             expr match {
                 case Var (name) =>
                     JsObject ("Var" -> JsArray (Vector (name.toJson)))
@@ -40,7 +40,7 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case Lambda (args, body) =>
                     JsObject ("Lambda" -> JsArray (Vector (args.toJson, body.toJson)))
             }
-        def read (value : JsValue) =
+        def read (value : JsValue) : Expr =
             value match {
                 case JsObject (fields) if fields contains "Var" =>
                     val JsArray (Vector (name)) = fields ("Var")
@@ -58,7 +58,7 @@ object JsonProtocol extends DefaultJsonProtocol {
     }
 
     implicit object TypeFormat extends RootJsonFormat[Type] {
-        def write (tpe : Type) =
+        def write (tpe : Type) : JsValue =
             tpe match {
                 case TypeRef (qname) =>
                     JsObject ("TypeRef" -> JsArray (Vector (qname.toJson)))
@@ -88,7 +88,7 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case TemporalType (elem) =>
                     JsObject ("TemporalType" -> JsArray (Vector (elem.toJson)))
             }
-        def read (value : JsValue) =
+        def read (value : JsValue) : Type =
             value match {
                 case JsObject (fields) if fields contains "TypeRef" =>
                     val JsArray (Vector (qname)) = fields ("TypeRef")
@@ -127,6 +127,22 @@ object JsonProtocol extends DefaultJsonProtocol {
                     val JsArray (Vector (elem)) = fields ("TemporalType")
                     TemporalType (elem.convertTo [Type])
             }
+    }
+
+    implicit object ModuleFormat extends RootJsonFormat[Module] {
+        def write (module : Module) : JsValue =
+            JsObject (
+                "modules" -> JsObject (module.modules map {case (name, mod) => (name.toString, mod.toJson)}),
+                "types" -> JsObject (module.types map {case (name, tpe) => (name.toString, tpe.toJson)}),
+                "exprs" -> JsObject (module.exprs map {case (name, expr) => (name.toString, expr.toJson)}))
+        def read (value : JsValue) : Module = {
+            val Seq (JsObject (jsModules), JsObject (jsTypes), JsObject (jsExprs)) =
+                value.asJsObject.getFields("modules", "types", "exprs")
+            Module (
+                modules = jsModules map {case (name, jsModule) => (Name.fromString(name), jsModule.convertTo [Module])},
+                types   = jsTypes map {case (name, jsType) => (Name.fromString(name), jsType.convertTo [Type])},
+                exprs   = jsExprs map {case (name, jsExpr) => (Name.fromString(name), jsExpr.convertTo [Expr])})
+        }
     }
 
 }

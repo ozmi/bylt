@@ -1,10 +1,10 @@
 package bylt.core
 
+import bylt.core.JsonProtocol._
+import org.scalacheck.Prop._
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
-import org.scalacheck.Prop._
 import spray.json._
-import JsonProtocol._
 
 class JsonProtocolTest extends FunSuite  with Checkers {
 
@@ -28,6 +28,16 @@ class JsonProtocolTest extends FunSuite  with Checkers {
             val jsonAst = tpe.toJson
             val tpe2 = jsonAst.convertTo [Type]
             tpe == tpe2
+        }
+    }
+
+    implicit val arbModule = Arbitrary.module
+
+    test ("Module to and from json are equivalent") {
+        check { (module : Module) =>
+            val jsonAst = module.toJson
+            val module2 = jsonAst.convertTo [Module]
+            module == module2
         }
     }
 

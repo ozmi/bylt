@@ -8,6 +8,8 @@ sealed abstract class Type
     case class BottomType () extends Type
     case class UnitType (value : QName) extends Type
 
+    case class LambdaType (arg : Type, ret : Type) extends Type
+
     sealed trait ProductType extends Type
         case class TupleType (elems : Vector [Type]) extends ProductType
         case class RecordType (fields : Vector [(Name, Type)]) extends ProductType

@@ -68,6 +68,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                     JsObject ("BottomType" -> JsArray ())
                 case UnitType (value) =>
                     JsObject ("UnitType" -> JsArray (Vector (value.toJson)))
+                case LambdaType (arg, ret) =>
+                    JsObject ("LambdaType" -> JsArray (Vector (arg.toJson, ret.toJson)))
                 case TupleType (elems) =>
                     JsObject ("TupleType" -> JsArray (Vector (elems.toJson)))
                 case RecordType (fields) =>
@@ -102,6 +104,9 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case JsObject (fields) if fields contains "UnitType" =>
                     val JsArray (Vector (qname)) = fields ("UnitType")
                     UnitType (qname.convertTo [QName])
+                case JsObject (fields) if fields contains "LambdaType" =>
+                    val JsArray (Vector (jsArg, jsRet)) = fields ("LambdaType")
+                    LambdaType (jsArg.convertTo [Type], jsRet.convertTo [Type])
                 case JsObject (fields) if fields contains "TupleType" =>
                     val JsArray (Vector (JsArray (tupleFields))) = fields ("TupleType")
                     TupleType (tupleFields map {_.convertTo [Type]})

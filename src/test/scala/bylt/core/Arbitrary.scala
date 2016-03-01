@@ -67,6 +67,12 @@ object Arbitrary {
     lazy val unitTypeGen : Gen [UnitType] =
         for (qname <- qnameGen) yield UnitType (qname)
 
+    def lambdaTypeGen (depth : Int) : Gen [LambdaType] =
+        for {
+            arg <- typeGen (depth)
+            ret <- typeGen (depth)
+        } yield LambdaType (arg, ret)
+
     def tupleTypeGen (depth : Int) : Gen [TupleType] =
         for (elems <- Gen.nonEmptyListOf (typeGen (depth))) yield TupleType (elems.toVector)
 
@@ -129,6 +135,7 @@ object Arbitrary {
                 1 -> Gen.const (TopType ()),
                 1 -> Gen.const (BottomType ()),
                 3 -> unitTypeGen,
+                5 -> lambdaTypeGen (depth - 1),
                 2 -> tupleTypeGen (depth - 1),
                 9 -> recordTypeGen (depth - 1),
                 7 -> taggedUnionTypeGen (depth - 1),

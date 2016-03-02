@@ -1,6 +1,9 @@
 package bylt.core
 
-sealed abstract class Type
+sealed abstract class Type {
+    def -> (returnType : Type) : LambdaType =
+        LambdaType (this, returnType)
+}
 
     case class TypeRef (qname : QName) extends Type
 
@@ -16,8 +19,8 @@ sealed abstract class Type
 
     case class TaggedUnionType (cases : Map [Name, Type]) extends Type
     object TaggedUnionType {
-        def enum (values : UnitType*) : TaggedUnionType =
-            TaggedUnionType ((values map {tpe => tpe.value.name -> tpe}).toMap)
+        def fromRefs (values : TypeRef*) : TaggedUnionType =
+            TaggedUnionType ((values map {tpe => tpe.qname.name -> tpe}).toMap)
     }
 
     case class OptionType (elem : Type) extends Type

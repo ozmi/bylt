@@ -1,9 +1,11 @@
 package bylt.core
 package lib
 
-object Text {
+object Text extends ModuleDecl ('lib / 'text) {
 
-    val Char = TypeRef ('text / 'char)
-    val CharSeq = ManyType (Char, sequential = true)
+    val Char = typeRef ('char)
+    val CharSeq = typeDecl ('char_seq) {
+        ManyType (Char, sequential = true)
+    }
 
 }

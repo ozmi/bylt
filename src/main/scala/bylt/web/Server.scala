@@ -26,7 +26,7 @@ object Server extends App with SimpleRoutingApp {
         path ("lib.json") {
             get {
                 complete {
-                    marshal (bylt.core.lib.Core.asModule)
+                    marshal (bylt.core.lib.module)
                 }
             }
         } ~ {

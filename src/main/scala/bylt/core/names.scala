@@ -8,6 +8,8 @@ case class Name (parts : Vector [String]) {
     def / (nextName : Name) : QName =
         QName (Vector (this), nextName)
 
+    def toQName = QName (Vector.empty, this)
+
     override def toString =
         parts mkString "_"
 

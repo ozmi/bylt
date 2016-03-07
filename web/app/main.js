@@ -2,38 +2,37 @@ import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import ModuleTree from 'app/model/module_tree';
+import ModuleDetail from 'app/model/module_detail';
+
 class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-		    types: {}
+		    rootModule: null,
+		    selectedModule: null
 		};
 	}
 	componentDidMount() {
         this.serverRequest = $.get(this.props.source, (result) => {
             this.setState({
-                types: result.types
+                rootModule: result
             });
         });
     }
     componentWillUnmount() {
         this.serverRequest.abort();
     }
+    handleSelect = (module) => {
+        this.setState({
+            selectedModule: module
+        });
+    }
     render() {
         return (
 			<div>
-			    <dl>
-			        {
-			            Object.keys(this.state.types).map(
-			                (type) => {
-			                    return [
-			                        <dt key={type + '.dt'}>{type}</dt>,
-			                        <dd key={type + 'dd'}>{JSON.stringify(this.state.types[type])}</dd>
-			                    ];
-			                }
-			            )
-			        }
-			    </dl>
+			    {this.state.rootModule ? <ModuleTree module={this.state.rootModule} handle_select={this.handleSelect}  /> : ""}
+			    {this.state.selectedModule ? <ModuleDetail module={this.state.selectedModule} /> : ""}
 			</div>
 		);
 	}

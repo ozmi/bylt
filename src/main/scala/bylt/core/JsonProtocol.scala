@@ -137,13 +137,15 @@ object JsonProtocol extends DefaultJsonProtocol {
     implicit object ModuleFormat extends RootJsonFormat[Module] {
         def write (module : Module) : JsValue =
             JsObject (
+                "name" -> module.name.toJson,
                 "modules" -> JsObject (module.modules map {case (name, mod) => (name.toString, mod.toJson)}),
                 "types" -> JsObject (module.types map {case (name, tpe) => (name.toString, tpe.toJson)}),
                 "exprs" -> JsObject (module.exprs map {case (name, expr) => (name.toString, expr.toJson)}))
         def read (value : JsValue) : Module = {
-            val Seq (JsObject (jsModules), JsObject (jsTypes), JsObject (jsExprs)) =
-                value.asJsObject.getFields("modules", "types", "exprs")
+            val Seq (jsName, JsObject (jsModules), JsObject (jsTypes), JsObject (jsExprs)) =
+                value.asJsObject.getFields("name", "modules", "types", "exprs")
             Module (
+                name = jsName.convertTo [Name],
                 modules = jsModules map {case (name, jsModule) => (Name.fromString(name), jsModule.convertTo [Module])},
                 types   = jsTypes map {case (name, jsType) => (Name.fromString(name), jsType.convertTo [Type])},
                 exprs   = jsExprs map {case (name, jsExpr) => (Name.fromString(name), jsExpr.convertTo [Expr])})

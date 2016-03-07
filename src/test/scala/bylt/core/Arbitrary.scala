@@ -180,15 +180,17 @@ object Arbitrary {
 
         if (depth > 1) {
             for {
+                name <- nameGen
                 modules <- Gen.listOf (moduleFieldGen)
                 types <- Gen.listOf (typeFieldGen)
                 exprs <- Gen.listOf (exprFieldGen)
-            } yield Module (modules.toMap, types.toMap, exprs.toMap)
+            } yield Module (name, modules.toMap, types.toMap, exprs.toMap)
         } else {
             for {
+                name <- nameGen
                 types <- Gen.listOf (typeFieldGen)
                 exprs <- Gen.listOf (exprFieldGen)
-            } yield Module (Map.empty, types.toMap, exprs.toMap)
+            } yield Module (name, Map.empty, types.toMap, exprs.toMap)
         }
     }
 

@@ -10,19 +10,17 @@ export default class ModuleDetail extends React.Component {
     render() {
         return (
             <div>
-                <span>{this.props.module.name}</span>
-                <ul>
+                <h2>{this.props.module.name}</h2>
                     {
                         Object.keys(this.props.module.types).map(typeName =>
-                            <li key={typeName}>
-                                <span>{typeName} </span>
-                                <div>
+                            <div key={typeName} className="panel panel-default">
+                                <div className="panel-heading">{typeName}</div>
+                                <div className="panel-body">
                                     <TypeDetail type={this.props.module.types[typeName]} />
                                 </div>
-                            </li>
+                            </div>
                         )
                     }
-                </ul>
 			</div>
 		);
 	}

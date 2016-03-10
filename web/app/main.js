@@ -30,9 +30,19 @@ class App extends React.Component {
     }
     render() {
         return (
-			<div>
-			    {this.state.rootModule ? <ModuleTree module={this.state.rootModule} handle_select={this.handleSelect}  /> : ""}
-			    {this.state.selectedModule ? <ModuleDetail module={this.state.selectedModule} /> : ""}
+			<div id="wrapper">
+                <div id="sidebar-wrapper">
+			        {this.state.rootModule ? <ModuleTree module={this.state.rootModule} handle_select={this.handleSelect}  /> : ""}
+			    </div>
+			    <div id="page-content-wrapper">
+                    <div className="page-content">
+                        <div className="row">
+                            <div className="col-md-12">
+                                {this.state.selectedModule ? <ModuleDetail module={this.state.selectedModule} /> : ""}
+                            </div>
+                        </div>
+                    </div>
+        	    </div>
 			</div>
 		);
 	}

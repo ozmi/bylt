@@ -1,25 +1,31 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import ListItem from 'material-ui/lib/lists/list-item';
 
 export default class ModuleTree extends React.Component {
 	constructor(props) {
 		super(props);
 	}
-    render() {
+
+	renderItem = (module, index) => {
         return (
-            <div>
-                <span onClick={this.props.handle_select.bind(null, this.props.module)} >{this.props.module.name}</span>
-                <ul>
-                    {
-                        Object.values(this.props.module.modules).map(module =>
-                            <li key={module.name}>
-                                <ModuleTree module={module} handle_select={this.props.handle_select} />
-                            </li>
-                        )
-                    }
-                </ul>
-			</div>
-		);
+            <ListItem
+                key={index}
+                primaryText={module.name}
+                secondaryText={"Description of module " + module.name}
+                initiallyOpen={true}
+                onTouchTap={this.props.handle_select.bind(null, module)}
+                nestedItems={
+                    Object.values(module.modules).map((module, index) =>
+                        this.renderItem(module, index)
+                    )
+                }
+            />
+        );
+	}
+
+    render() {
+        return this.renderItem(this.props.module, 0);
 	}
 };

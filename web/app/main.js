@@ -1,9 +1,18 @@
 import $ from 'jquery';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+
+import AppBar from 'material-ui/lib/app-bar';
+import LeftNav from 'material-ui/lib/left-nav';
+import TextField from 'material-ui/lib/text-field';
+
+import List from 'material-ui/lib/lists/list';
 
 import ModuleTree from 'app/model/module_tree';
 import ModuleDetail from 'app/model/module_detail';
+
+injectTapEventPlugin();
 
 class App extends React.Component {
 	constructor(props) {
@@ -29,20 +38,39 @@ class App extends React.Component {
         });
     }
     render() {
-        return (
-			<div id="wrapper">
-                <div id="sidebar-wrapper">
-			        {this.state.rootModule ? <ModuleTree module={this.state.rootModule} handle_select={this.handleSelect}  /> : ""}
-			    </div>
-			    <div id="page-content-wrapper">
-                    <div className="page-content">
-                        <div className="row">
-                            <div className="col-md-12">
-                                {this.state.selectedModule ? <ModuleDetail module={this.state.selectedModule} /> : ""}
-                            </div>
+        var content = null;
+        if (this.state.selectedModule) {
+            content = (
+                <div className="page-content">
+                    <ol className="breadcrumb">
+                      <li><a href="#">lib</a></li>
+                      <li className="active">{this.state.selectedModule.name}</li>
+                    </ol>
+                    <div className="row">
+                        <div className="col-md-12">
+                            <ModuleDetail module={this.state.selectedModule} />
                         </div>
                     </div>
-        	    </div>
+                </div>
+            );
+        }
+        return (
+            <div>
+                <AppBar title="bylt">
+                </AppBar>
+                <div id="wrapper">
+                    <LeftNav open={true}>
+                        <AppBar title="bylt">
+                        </AppBar>
+                        <TextField hintText="search ..." />
+                        <List>
+                            {this.state.rootModule ? <ModuleTree module={this.state.rootModule} handle_select={this.handleSelect}  /> : ""}
+                        </List>
+                    </LeftNav>
+                    <div id="page-content-wrapper">
+                        {content}
+                    </div>
+                </div>
 			</div>
 		);
 	}

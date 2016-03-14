@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import TypeDetail from 'app/model/type_detail';
+import TypeDeclDetail from 'app/model/type_decl_detail';
 
 export default class ModuleDetail extends React.Component {
 	constructor(props) {
@@ -10,17 +10,15 @@ export default class ModuleDetail extends React.Component {
     render() {
         return (
             <div>
-                <h2>{this.props.module.name}</h2>
-                    {
-                        Object.keys(this.props.module.types).map(typeName =>
-                            <div key={typeName} className="panel panel-default">
-                                <div className="panel-heading">{typeName}</div>
-                                <div className="panel-body">
-                                    <TypeDetail type={this.props.module.types[typeName]} />
-                                </div>
-                            </div>
-                        )
-                    }
+                {
+                    Object.keys(this.props.module.types).map(typeName =>
+                        <TypeDeclDetail
+                            key={typeName}
+                            typeName={typeName}
+                            type={this.props.module.types[typeName]}
+                        />
+                    )
+                }
 			</div>
 		);
 	}

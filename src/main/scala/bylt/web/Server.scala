@@ -23,7 +23,7 @@ object Server extends App with SimpleRoutingApp {
         }
 
 
-    startServer (interface = "localhost", port = Properties.envOrElse("PORT", "8888").toInt) {
+    startServer (interface = "0.0.0.0", port = Properties.envOrElse("PORT", "8888").toInt) {
         path ("lib.json") {
             get {
                 complete {

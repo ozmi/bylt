@@ -7,6 +7,7 @@ import spray.httpx.SprayJsonSupport._
 import spray.httpx.marshalling._
 import spray.routing.{ExceptionHandler, SimpleRoutingApp}
 
+import scala.util.Properties
 import scala.util.control.NonFatal
 
 object Server extends App with SimpleRoutingApp {
@@ -22,7 +23,7 @@ object Server extends App with SimpleRoutingApp {
         }
 
 
-    startServer (interface = "localhost", port = 8888) {
+    startServer (interface = "localhost", port = Properties.envOrElse("PORT", "8888").toInt) {
         path ("lib.json") {
             get {
                 complete {

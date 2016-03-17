@@ -1,3 +1,9 @@
+import com.typesafe.sbt.SbtNativePackager._
+
+import NativePackagerKeys._
+
+packageArchetype.java_application
+
 name := "bylt"
 
 version := "1.0"
@@ -5,6 +11,8 @@ version := "1.0"
 scalaVersion := "2.11.7"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xfatal-warnings")
+
+mainClass in Compile := Some("bylt.web.Server")
 
 // --- Dependencies ---
 resolvers ++= Seq (

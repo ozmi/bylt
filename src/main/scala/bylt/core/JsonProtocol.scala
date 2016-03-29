@@ -75,6 +75,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case RecordType (fields) =>
                     val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
                     JsObject ("RecordType" -> JsArray (Vector (jsFields)))
+                case UnionType (members) =>
+                    JsObject ("UnionType" -> JsArray (Vector (members.toJson)))
                 case TaggedUnionType (cases) =>
                     val map = JsObject (cases.toSeq map {case (key, value) => key.toString -> value.toJson} : _*)
                     JsObject ("TaggedUnionType" -> JsArray (Vector (map)))
@@ -113,6 +115,9 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case JsObject (fields) if fields contains "RecordType" =>
                     val JsArray (Vector (JsArray (jsFields))) = fields ("RecordType")
                     RecordType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [Type])})
+                case JsObject (fields) if fields contains "UnionType" =>
+                    val JsArray (Vector (JsArray (unionMembers))) = fields ("UnionType")
+                    UnionType ((unionMembers map {_.convertTo [Type]}).toSet)
                 case JsObject (fields) if fields contains "TaggedUnionType" =>
                     val JsArray (Vector (JsObject (jsFields))) = fields ("TaggedUnionType")
                     TaggedUnionType (jsFields map {case (name, tpe) => (Name.fromString (name), tpe.convertTo [Type])})

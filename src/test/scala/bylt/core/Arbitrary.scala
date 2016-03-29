@@ -87,6 +87,11 @@ object Arbitrary {
             yield RecordType (fields.toVector)
     }
 
+    def unionTypeGen (depth : Int) : Gen [UnionType] = {
+        for (members <- Gen.nonEmptyListOf (typeGen (depth)))
+            yield UnionType (members.toSet)
+    }
+
     def taggedUnionTypeGen (depth : Int) : Gen [TaggedUnionType] = {
         val fieldGen =
             for {
@@ -138,6 +143,7 @@ object Arbitrary {
                 5 -> lambdaTypeGen (depth - 1),
                 2 -> tupleTypeGen (depth - 1),
                 9 -> recordTypeGen (depth - 1),
+                7 -> unionTypeGen (depth - 1),
                 7 -> taggedUnionTypeGen (depth - 1),
                 10 -> optionTypeGen (depth - 1),
                 10 -> manyTypeGen (depth - 1),

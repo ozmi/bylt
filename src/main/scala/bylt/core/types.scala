@@ -17,11 +17,13 @@ sealed abstract class Type {
         case class TupleType (elems : Vector [Type]) extends ProductType
         case class RecordType (fields : Vector [(Name, Type)]) extends ProductType
 
-    case class TaggedUnionType (cases : Map [Name, Type]) extends Type
-    object TaggedUnionType {
-        def fromRefs (values : TypeRef*) : TaggedUnionType =
-            TaggedUnionType ((values map {tpe => tpe.qname.name -> tpe}).toMap)
-    }
+    sealed trait SumType extends Type
+        case class UnionType (members : Set [Type]) extends SumType
+        case class TaggedUnionType (cases : Map [Name, Type]) extends SumType
+        object TaggedUnionType {
+            def fromRefs (values : TypeRef*) : TaggedUnionType =
+                TaggedUnionType ((values map {tpe => tpe.qname.name -> tpe}).toMap)
+        }
 
     case class OptionType (elem : Type) extends Type
     case class ManyType (elem : Type, sequential : Boolean = false, unique : Boolean = false) extends Type

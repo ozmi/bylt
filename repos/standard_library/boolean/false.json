@@ -1,0 +1,8 @@
+{
+  "type": {
+    "UnitType": []
+  },
+  "value": {
+    "Const": ["lib/boolean/false"]
+  }
+}

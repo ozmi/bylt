@@ -64,7 +64,7 @@ class App extends React.Component {
                         </AppBar>
                         <TextField hintText="search ..." />
                         <List>
-                            {this.state.rootModule ? <ModuleTree module={this.state.rootModule} handle_select={this.handleSelect}  /> : ""}
+                            {this.state.rootModule ? Object.values(this.state.rootModule.modules).map(module => <ModuleTree key={module.name} module={module} handle_select={this.handleSelect}  />) : ""}
                         </List>
                     </LeftNav>
                     <div id="page-content-wrapper">

@@ -11,11 +11,11 @@ export default class ModuleDetail extends React.Component {
         return (
             <div>
                 {
-                    Object.keys(this.props.module.types).map(typeName =>
+                    Object.keys(this.props.module.decls).map(declName =>
                         <TypeDeclDetail
-                            key={typeName}
-                            typeName={typeName}
-                            type={this.props.module.types[typeName]}
+                            key={declName}
+                            typeName={declName}
+                            type={this.props.module.decls[declName].type}
                         />
                     )
                 }

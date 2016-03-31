@@ -26,7 +26,7 @@ object Core extends ModuleDecl ('lib / 'core) {
         RecordType (Vector ('args -> ManyType (Expr), 'body -> Expr))
     }
     lazy val Expr : TypeRef = typeDecl ('expr) {
-        TaggedUnionType.fromRefs (Const, Var, Apply, Lambda)
+        SumType.fromRefs (Const, Var, Apply, Lambda)
     }
 
     // types
@@ -50,12 +50,12 @@ object Core extends ModuleDecl ('lib / 'core) {
         RecordType (Vector ('fields -> ManyType (TupleType (Vector (Name, _Type)), sequential = true)))
     }
     val _ProductType = typeDecl ('product_type) {
-        TaggedUnionType.fromRefs (_TupleType, _RecordType)
+        SumType.fromRefs (_TupleType, _RecordType)
     }
 
     // TODO: use map for cases
-    val _TaggedUnionType = typeDecl ('tagged_union_type) {
-        RecordType (Vector ('cases -> ManyType (TupleType (Vector (Name, _Type)))))
+    val _SumType = typeDecl ('sum_type) {
+        RecordType (Vector ('members -> ManyType (QName, sequential = true)))
     }
 
     val _OptionType = typeDecl ('option_type) {
@@ -78,9 +78,9 @@ object Core extends ModuleDecl ('lib / 'core) {
     }
 
     lazy val _Type : TypeRef = typeDecl ('type) {
-        TaggedUnionType.fromRefs (
+        SumType.fromRefs (
             _TypeRef, _TopType, _BottomType, _UnitType, _LambdaType,
-            _ProductType, _TaggedUnionType, _OptionType, _ManyType,
+            _ProductType, _SumType, _OptionType, _ManyType,
             _RestrictedType, _StructuralType, _TemporalType)
     }
 

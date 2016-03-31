@@ -66,8 +66,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                     JsObject ("TopType" -> JsArray ())
                 case BottomType () =>
                     JsObject ("BottomType" -> JsArray ())
-                case UnitType (value) =>
-                    JsObject ("UnitType" -> JsArray (Vector (value.toJson)))
+                case UnitType () =>
+                    JsObject ("UnitType" -> JsArray ())
                 case LambdaType (arg, ret) =>
                     JsObject ("LambdaType" -> JsArray (Vector (arg.toJson, ret.toJson)))
                 case TupleType (elems) =>
@@ -75,11 +75,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case RecordType (fields) =>
                     val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
                     JsObject ("RecordType" -> JsArray (Vector (jsFields)))
-                case UnionType (members) =>
-                    JsObject ("UnionType" -> JsArray (Vector (members.toJson)))
-                case TaggedUnionType (cases) =>
-                    val map = JsObject (cases.toSeq map {case (key, value) => key.toString -> value.toJson} : _*)
-                    JsObject ("TaggedUnionType" -> JsArray (Vector (map)))
+                case SumType (members) =>
+                    JsObject ("SumType" -> JsArray (Vector (members.toJson)))
                 case OptionType (elem) =>
                     JsObject ("OptionType" -> JsArray (Vector (elem.toJson)))
                 case ManyType (elem, sequential, unique) =>
@@ -104,8 +101,8 @@ object JsonProtocol extends DefaultJsonProtocol {
                     val JsArray (Vector ()) = fields ("BottomType")
                     BottomType ()
                 case JsObject (fields) if fields contains "UnitType" =>
-                    val JsArray (Vector (qname)) = fields ("UnitType")
-                    UnitType (qname.convertTo [QName])
+                    val JsArray (Vector ()) = fields ("UnitType")
+                    UnitType ()
                 case JsObject (fields) if fields contains "LambdaType" =>
                     val JsArray (Vector (jsArg, jsRet)) = fields ("LambdaType")
                     LambdaType (jsArg.convertTo [Type], jsRet.convertTo [Type])
@@ -115,12 +112,9 @@ object JsonProtocol extends DefaultJsonProtocol {
                 case JsObject (fields) if fields contains "RecordType" =>
                     val JsArray (Vector (JsArray (jsFields))) = fields ("RecordType")
                     RecordType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [Type])})
-                case JsObject (fields) if fields contains "UnionType" =>
-                    val JsArray (Vector (JsArray (unionMembers))) = fields ("UnionType")
-                    UnionType ((unionMembers map {_.convertTo [Type]}).toSet)
-                case JsObject (fields) if fields contains "TaggedUnionType" =>
-                    val JsArray (Vector (JsObject (jsFields))) = fields ("TaggedUnionType")
-                    TaggedUnionType (jsFields map {case (name, tpe) => (Name.fromString (name), tpe.convertTo [Type])})
+                case JsObject (fields) if fields contains "SumType" =>
+                    val JsArray (Vector (JsArray (unionMembers))) = fields ("SumType")
+                    SumType (unionMembers map {_.convertTo [QName]})
                 case JsObject (fields) if fields contains "OptionType" =>
                     val JsArray (Vector (elem)) = fields ("OptionType")
                     OptionType (elem.convertTo [Type])
@@ -139,21 +133,37 @@ object JsonProtocol extends DefaultJsonProtocol {
             }
     }
 
+    implicit object DeclarationFormat extends RootJsonFormat[Declaration] {
+        def write (decl : Declaration) : JsValue =
+            JsObject (
+                "type"  -> decl.tpe.map {_.toJson}.getOrElse (JsNull),
+                "value" -> decl.value.map {_.toJson}.getOrElse (JsNull)
+            )
+        def read (value : JsValue) : Declaration = {
+            val Seq (jsType, jsValue) =
+                value.asJsObject.getFields("type", "value")
+            Declaration (
+                tpe   = if (jsType == JsNull) None else Some (jsType.convertTo [Type]),
+                value = if (jsValue == JsNull) None else Some (jsValue.convertTo [Expr])
+            )
+        }
+    }
+
     implicit object ModuleFormat extends RootJsonFormat[Module] {
         def write (module : Module) : JsValue =
             JsObject (
-                "name" -> module.name.toJson,
+                "name"    -> module.name.toJson,
                 "modules" -> JsObject (module.modules map {case (name, mod) => (name.toString, mod.toJson)}),
-                "types" -> JsObject (module.types map {case (name, tpe) => (name.toString, tpe.toJson)}),
-                "exprs" -> JsObject (module.exprs map {case (name, expr) => (name.toString, expr.toJson)}))
+                "decls"   -> JsObject (module.decls map {case (name, decl) => (name.toString, decl.toJson)})
+            )
         def read (value : JsValue) : Module = {
-            val Seq (jsName, JsObject (jsModules), JsObject (jsTypes), JsObject (jsExprs)) =
-                value.asJsObject.getFields("name", "modules", "types", "exprs")
+            val Seq (jsName, JsObject (jsModules), JsObject (jsDecls)) =
+                value.asJsObject.getFields("name", "modules", "decls")
             Module (
-                name = jsName.convertTo [Name],
+                name    = jsName.convertTo [Name],
                 modules = jsModules map {case (name, jsModule) => (Name.fromString(name), jsModule.convertTo [Module])},
-                types   = jsTypes map {case (name, jsType) => (Name.fromString(name), jsType.convertTo [Type])},
-                exprs   = jsExprs map {case (name, jsExpr) => (Name.fromString(name), jsExpr.convertTo [Expr])})
+                decls   = jsDecls map {case (name, jsDecl) => (Name.fromString(name), jsDecl.convertTo [Declaration])}
+            )
         }
     }
 

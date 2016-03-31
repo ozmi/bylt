@@ -2,6 +2,7 @@ package bylt.web
 
 import akka.actor.ActorSystem
 import bylt.core.JsonProtocol._
+import bylt.core._
 import spray.http.StatusCodes._
 import spray.httpx.SprayJsonSupport._
 import spray.httpx.marshalling._
@@ -27,7 +28,10 @@ object Server extends App with SimpleRoutingApp {
         path ("lib.json") {
             get {
                 complete {
-                    marshal (bylt.core.lib.module)
+                    val m1 = Map (lib.module.name -> lib.module)
+                    val m2 = Module.fromDirectory (new java.io.File ("./repos"), Name.fromString ("")).modules
+                    val rootModule = Module (Name.fromString (""), Module.mergeModuleMaps (m1, m2), Map.empty)
+                    marshal (rootModule)
                 }
             }
         } ~ {

@@ -3,17 +3,43 @@ package bylt.core
 case class Module (
     name : Name,
     modules : Map [Name, Module],
-    types : Map [Name, Type],
-    exprs : Map [Name, Expr])
+    decls : Map [Name, Declaration])
+
+case class Declaration (
+    tpe : Option[Type],
+    value : Option[Expr])
 
 object Module {
+
+    def fromDirectory (rootDir : java.io.File, moduleName : Name) : Module = {
+        import bylt.core.JsonProtocol._
+        import spray.json._
+
+        val decls =
+            for (jsonFile <- rootDir.listFiles if jsonFile.isFile && (jsonFile.getName endsWith ".json")) yield {
+                val declName = Name.fromString ((jsonFile.getName.split ("\\.").dropRight (1)).mkString)
+                val decl = io.Source.fromFile (jsonFile).mkString.parseJson.convertTo [Declaration]
+                declName -> decl
+            }
+
+        val modules =
+            for (subDir <- rootDir.listFiles if subDir.isDirectory) yield {
+                val moduleName = Name.fromString (subDir.getName)
+                moduleName -> fromDirectory (subDir, moduleName)
+            }
+
+        Module (
+            name = moduleName,
+            modules = modules.toMap,
+            decls = decls.toMap
+        )
+    }
 
     def root =
         Module (
             name = Name.fromString (""),
             modules = Map.empty,
-            types = Map.empty,
-            exprs = Map.empty
+            decls = Map.empty
         )
 
     def mergeModules (parent : Module, aModule : Module, bModule : Module) : Module = {
@@ -21,8 +47,7 @@ object Module {
             Module (
                 name = aModule.name,
                 modules = mergeModuleMaps (aModule.modules, bModule.modules),
-                types = aModule.types ++ bModule.types,
-                exprs = aModule.exprs ++ bModule.exprs
+                decls = mergeDeclarationMaps (aModule.decls, bModule.decls)
             )
         } else {
             val childModules =
@@ -44,8 +69,7 @@ object Module {
                         moduleName -> Module (
                             name = moduleName,
                             modules = mergeModuleMaps (aModule.modules, bModule.modules),
-                            types = aModule.types ++ bModule.types,
-                            exprs = aModule.exprs ++ bModule.exprs
+                            decls = mergeDeclarationMaps (aModule.decls, bModule.decls)
                         )
                     case (Some (aModule), None) =>
                         moduleName -> aModule
@@ -56,6 +80,25 @@ object Module {
                 }
         moduleMapping.toMap
     }
+
+    def mergeDeclarationMaps (a : Map [Name, Declaration], b : Map [Name, Declaration]) : Map [Name, Declaration] = {
+        val declMapping =
+            for (declName <- a.keys ++ b.keys)
+                yield (a get declName, b get declName) match {
+                    case (Some (aDecl), Some (bDecl)) =>
+                        declName -> Declaration (
+                            tpe = aDecl.tpe orElse bDecl.tpe,
+                            value = aDecl.value orElse bDecl.value
+                        )
+                    case (Some (aModule), None) =>
+                        declName -> aModule
+                    case (None, Some (bModule)) =>
+                        declName -> bModule
+                    case (None, None) =>
+                        sys.error ("This should never happen")
+                }
+        declMapping.toMap
+    }
 }
 
 abstract class ModuleDecl (val qname : QName) {
@@ -63,7 +106,9 @@ abstract class ModuleDecl (val qname : QName) {
     private var _typeDecls : Map [Name, () => Type] = Map.empty
 
     def typeRef (name : Name) : TypeRef =
-        TypeRef (qname / name)
+        typeDecl (name) {
+            TypeRef (qname / name)
+        }
 
     def typeDecl (name : Name) (tpeInit : => Type) : TypeRef = {
         val fullName = qname / name
@@ -73,7 +118,7 @@ abstract class ModuleDecl (val qname : QName) {
 
     def unitType (name : Name) : TypeRef =
         typeDecl (name) {
-            UnitType (qname / name)
+            UnitType ()
         }
 
     def asModule : Module = {
@@ -85,8 +130,7 @@ abstract class ModuleDecl (val qname : QName) {
                     Module (
                         name = path.last,
                         modules = Map (module.name -> module),
-                        types = Map.empty,
-                        exprs = Map.empty
+                        decls = Map.empty
                     )
                 wrapIfNeeded (path dropRight 1, wrapper)
             }
@@ -95,8 +139,8 @@ abstract class ModuleDecl (val qname : QName) {
             Module (
                 name = this.qname.name,
                 modules = Map.empty,
-                types = this._typeDecls mapValues {t => t ()},
-                exprs = Map.empty)
+                decls = this._typeDecls mapValues {t => Declaration (Some (t ()), None)}
+            )
 
         wrapIfNeeded (this.qname.ns, leafModule)
     }

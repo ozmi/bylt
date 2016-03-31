@@ -25,7 +25,7 @@ export default class TypeDeclDetail extends React.Component {
             <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
                 <CardHeader
                     title={title}
-                    subtitle={"Short description of " + title}
+                    subtitle={(new TypeDetail({type: this.props.type}).asText()) + " - Short description of " + title}
                     actAsExpander={true}
                     showExpandableButton={true}
                 />

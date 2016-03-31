@@ -64,9 +64,6 @@ object Arbitrary {
     lazy val typeRefGen : Gen [TypeRef] =
         for (qname <- qnameGen) yield TypeRef (qname)
 
-    lazy val unitTypeGen : Gen [UnitType] =
-        for (qname <- qnameGen) yield UnitType (qname)
-
     def lambdaTypeGen (depth : Int) : Gen [LambdaType] =
         for {
             arg <- typeGen (depth)
@@ -87,20 +84,9 @@ object Arbitrary {
             yield RecordType (fields.toVector)
     }
 
-    def unionTypeGen (depth : Int) : Gen [UnionType] = {
-        for (members <- Gen.nonEmptyListOf (typeGen (depth)))
-            yield UnionType (members.toSet)
-    }
-
-    def taggedUnionTypeGen (depth : Int) : Gen [TaggedUnionType] = {
-        val fieldGen =
-            for {
-                name <- nameGen
-                tpe <- typeGen (depth)
-            } yield (name, tpe)
-
-        for (fields <- Gen.nonEmptyListOf (fieldGen))
-            yield TaggedUnionType (fields.toMap)
+    def sumTypeGen (depth : Int) : Gen [SumType] = {
+        for (members <- Gen.nonEmptyListOf (qnameGen))
+            yield SumType (members.toVector)
     }
 
     def optionTypeGen (depth : Int) : Gen [OptionType] =
@@ -139,12 +125,11 @@ object Arbitrary {
                 3 -> typeRefGen,
                 1 -> Gen.const (TopType ()),
                 1 -> Gen.const (BottomType ()),
-                3 -> unitTypeGen,
+                3 -> Gen.const (UnitType ()),
                 5 -> lambdaTypeGen (depth - 1),
                 2 -> tupleTypeGen (depth - 1),
                 9 -> recordTypeGen (depth - 1),
-                7 -> unionTypeGen (depth - 1),
-                7 -> taggedUnionTypeGen (depth - 1),
+                7 -> sumTypeGen (depth - 1),
                 10 -> optionTypeGen (depth - 1),
                 10 -> manyTypeGen (depth - 1),
                 4 -> restrictedTypeGen (depth - 1),
@@ -155,7 +140,7 @@ object Arbitrary {
                 3 -> typeRefGen,
                 1 -> Gen.const (TopType ()),
                 1 -> Gen.const (BottomType ()),
-                3 -> unitTypeGen
+                3 -> Gen.const (UnitType ())
             )
         }
 
@@ -165,6 +150,13 @@ object Arbitrary {
 
     lazy val tpe = org.scalacheck.Arbitrary (typeGen)
 
+    def declGen (depth : Int) : Gen [Declaration] = {
+        for {
+            tpe <- Gen.option (typeGen (depth))
+            value <- Gen.option (exprGen (depth))
+        } yield Declaration (tpe, value)
+    }
+
     def moduleGen (depth : Int) : Gen [Module] = {
         val moduleFieldGen =
             for {
@@ -172,31 +164,23 @@ object Arbitrary {
                 module <- moduleGen (depth - 1)
             } yield (name, module)
 
-        val typeFieldGen =
+        val declFieldGen =
             for {
                 name <- nameGen
-                tpe <- typeGen (depth - 1)
-            } yield (name, tpe)
-
-        val exprFieldGen =
-            for {
-                name <- nameGen
-                expr <- exprGen (depth - 1)
-            } yield (name, expr)
+                decl <- declGen (depth - 1)
+            } yield (name, decl)
 
         if (depth > 1) {
             for {
                 name <- nameGen
                 modules <- Gen.listOf (moduleFieldGen)
-                types <- Gen.listOf (typeFieldGen)
-                exprs <- Gen.listOf (exprFieldGen)
-            } yield Module (name, modules.toMap, types.toMap, exprs.toMap)
+                decls <- Gen.listOf (declFieldGen)
+            } yield Module (name, modules.toMap, decls.toMap)
         } else {
             for {
                 name <- nameGen
-                types <- Gen.listOf (typeFieldGen)
-                exprs <- Gen.listOf (exprFieldGen)
-            } yield Module (name, Map.empty, types.toMap, exprs.toMap)
+                decls <- Gen.listOf (declFieldGen)
+            } yield Module (name, Map.empty, decls.toMap)
         }
     }
 

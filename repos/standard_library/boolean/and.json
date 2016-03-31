@@ -1,0 +1,14 @@
+{
+  "type": {
+    "LambdaType": [{
+      "LambdaType": [{
+        "TypeRef": ["lib/boolean/boolean"]
+      }, {
+        "TypeRef": ["lib/boolean/boolean"]
+      }]
+    }, {
+      "TypeRef": ["lib/boolean/boolean"]
+    }]
+  },
+  "value": null
+}

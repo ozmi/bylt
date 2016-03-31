@@ -18,14 +18,14 @@ class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-		    rootModule: null,
+		    modules: [],
 		    selectedModule: null
 		};
 	}
 	componentDidMount() {
         this.serverRequest = $.get(this.props.source, (result) => {
             this.setState({
-                rootModule: result
+                modules: result
             });
         });
     }
@@ -64,7 +64,7 @@ class App extends React.Component {
                         </AppBar>
                         <TextField hintText="search ..." />
                         <List>
-                            {this.state.rootModule ? Object.values(this.state.rootModule.modules).map(module => <ModuleTree key={module.name} module={module} handle_select={this.handleSelect}  />) : ""}
+                            {this.state.modules.map(module => <ModuleTree key={module.name} module={module} handle_select={this.handleSelect}  />)}
                         </List>
                     </LeftNav>
                     <div id="page-content-wrapper">

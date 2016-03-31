@@ -1,0 +1,12 @@
+{
+  "type": {
+    "RecordType": [[["fun", {
+      "TypeRef": ["language/ast/expr"]
+    }], ["args", {
+      "ManyType": [{
+        "TypeRef": ["language/ast/expr"]
+      }, false, false]
+    }]]]
+  },
+  "value": null
+}

@@ -1,0 +1,12 @@
+{
+  "type": {
+    "RecordType": [[["ns", {
+      "ManyType": [{
+        "TypeRef": ["language/name"]
+      }, true, false]
+    }], ["name", {
+      "TypeRef": ["language/name"]
+    }]]]
+  },
+  "value": null
+}

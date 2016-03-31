@@ -28,10 +28,8 @@ object Server extends App with SimpleRoutingApp {
         path ("lib.json") {
             get {
                 complete {
-                    val m1 = Map (lib.module.name -> lib.module)
-                    val m2 = Module.fromDirectory (new java.io.File ("./repos"), Name.fromString ("")).modules
-                    val rootModule = Module (Name.fromString (""), Module.mergeModuleMaps (m1, m2), Map.empty)
-                    marshal (rootModule)
+                    val modules = Module.allFromDirectory (new java.io.File ("./repos"))
+                    marshal (modules)
                 }
             }
         } ~ {

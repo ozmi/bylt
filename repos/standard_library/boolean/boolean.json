@@ -1,6 +1,6 @@
 {
   "type": {
-    "SumType": [["lib/boolean/true", "lib/boolean/false"]]
+    "SumType": [["standard_library/boolean/true", "standard_library/boolean/false"]]
   },
   "value": null
 }

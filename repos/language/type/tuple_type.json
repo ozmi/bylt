@@ -1,0 +1,10 @@
+{
+  "type": {
+    "RecordType": [[["elems", {
+      "ManyType": [{
+        "TypeRef": ["language/type/type"]
+      }, true, false]
+    }]]]
+  },
+  "value": null
+}

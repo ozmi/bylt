@@ -1,0 +1,8 @@
+{
+  "type": {
+    "RecordType": [[["elem", {
+      "TypeRef": ["language/type/type"]
+    }]]]
+  },
+  "value": null
+}

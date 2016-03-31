@@ -1,0 +1,10 @@
+{
+  "type": {
+    "RecordType": [[["arg", {
+      "TypeRef": ["language/type/type"]
+    }], ["ret", {
+      "TypeRef": ["language/type/type"]
+    }]]]
+  },
+  "value": null
+}

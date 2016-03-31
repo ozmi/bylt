@@ -3,6 +3,6 @@
     "UnitType": []
   },
   "value": {
-    "Const": ["lib/boolean/false"]
+    "Const": ["standard_library/boolean/false"]
   }
 }

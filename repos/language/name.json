@@ -1,0 +1,10 @@
+{
+  "type": {
+    "RecordType": [[["parts", {
+      "ManyType": [{
+        "TypeRef": ["standard_library/text/char_seq"]
+      }, true, false]
+    }]]]
+  },
+  "value": null
+}

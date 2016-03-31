@@ -2,12 +2,12 @@
   "type": {
     "LambdaType": [{
       "LambdaType": [{
-        "TypeRef": ["lib/boolean/boolean"]
+        "TypeRef": ["standard_library/boolean/boolean"]
       }, {
-        "TypeRef": ["lib/boolean/boolean"]
+        "TypeRef": ["standard_library/boolean/boolean"]
       }]
     }, {
-      "TypeRef": ["lib/boolean/boolean"]
+      "TypeRef": ["standard_library/boolean/boolean"]
     }]
   },
   "value": null

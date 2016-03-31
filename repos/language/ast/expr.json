@@ -1,0 +1,6 @@
+{
+  "type": {
+    "SumType": [["language/ast/apply", "language/ast/const", "language/ast/lambda", "language/ast/var"]]
+  },
+  "value": null
+}

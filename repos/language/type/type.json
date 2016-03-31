@@ -1,0 +1,10 @@
+{
+  "type": {
+    "SumType": [[
+      "language/type/bottom_type", "language/type/lambda_type", "language/type/many_type", "language/type/option_type",
+      "language/type/product_type", "language/type/restricted_type", "language/type/structural_type", "language/type/sum_type",
+      "language/type/temporal_type", "language/type/top_type", "language/type/type_ref", "language/type/unit_type"
+    ]]
+  },
+  "value": null
+}

@@ -1,0 +1,6 @@
+{
+  "type": {
+    "SumType": [["language/type/tuple_type", "language/type/record_type"]]
+  },
+  "value": null
+}

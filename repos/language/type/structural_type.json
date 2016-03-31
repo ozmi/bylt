@@ -1,0 +1,14 @@
+{
+  "type": {
+    "RecordType": [[["fields", {
+      "ManyType": [{
+        "TupleType": [[{
+          "TypeRef": ["language/name"]
+        }, {
+          "TypeRef": ["language/type/type"]
+        }]]
+      }, true, false]
+    }]]]
+  },
+  "value": null
+}

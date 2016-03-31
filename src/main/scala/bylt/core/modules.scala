@@ -11,7 +11,13 @@ case class Declaration (
 
 object Module {
 
-    def fromDirectory (rootDir : java.io.File, moduleName : Name) : Module = {
+    def allFromDirectory (rootDir : java.io.File) : Seq [Module] = {
+        for (subDir <- rootDir.listFiles if subDir.isDirectory) yield {
+            fromDirectory (subDir)
+        }
+    }
+
+    def fromDirectory (rootDir : java.io.File) : Module = {
         import bylt.core.JsonProtocol._
         import spray.json._
 
@@ -24,12 +30,12 @@ object Module {
 
         val modules =
             for (subDir <- rootDir.listFiles if subDir.isDirectory) yield {
-                val moduleName = Name.fromString (subDir.getName)
-                moduleName -> fromDirectory (subDir, moduleName)
+                val module = fromDirectory (subDir)
+                module.name -> module
             }
 
         Module (
-            name = moduleName,
+            name = Name.fromString (rootDir.getName),
             modules = modules.toMap,
             decls = decls.toMap
         )

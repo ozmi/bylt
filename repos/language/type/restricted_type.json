@@ -1,0 +1,10 @@
+{
+  "type": {
+    "RecordType": [[["base", {
+      "TypeRef": ["language/type/type"]
+    }], ["predicate", {
+      "TypeRef": ["language/ast/expr"]
+    }]]]
+  },
+  "value": null
+}

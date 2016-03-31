@@ -1,10 +1,12 @@
 {
   "type": {
-    "LambdaType": [{
+    "RecordType": [[["elem", {
+      "TypeRef": ["language/type/type"]
+    }], ["sequential", {
       "TypeRef": ["standard_library/boolean/boolean"]
-    }, {
+    }], ["unique", {
       "TypeRef": ["standard_library/boolean/boolean"]
-    }]
+    }]]]
   },
   "value": null
 }

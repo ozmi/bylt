@@ -1,0 +1,8 @@
+{
+  "type": {
+    "ManyType": [{
+      "TypeRef": ["lib/text/char"]
+    }, true, false]
+  },
+  "value": null
+}

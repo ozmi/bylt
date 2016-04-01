@@ -41,35 +41,19 @@ class App extends React.Component {
         var content = null;
         if (this.state.selectedModule) {
             content = (
-                <div className="page-content">
-                    <ol className="breadcrumb">
-                      <li><a href="#">lib</a></li>
-                      <li className="active">{this.state.selectedModule.name}</li>
-                    </ol>
-                    <div className="row">
-                        <div className="col-md-12">
-                            <ModuleDetail module={this.state.selectedModule} />
-                        </div>
-                    </div>
-                </div>
+                <ModuleDetail module={this.state.selectedModule} />
             );
         }
         return (
             <div>
-                <AppBar title="bylt">
-                </AppBar>
-                <div id="wrapper">
-                    <LeftNav open={true}>
-                        <AppBar title="bylt">
-                        </AppBar>
-                        <TextField hintText="search ..." />
-                        <List>
-                            {this.state.modules.map(module => <ModuleTree key={module.name} module={module} handle_select={this.handleSelect}  />)}
-                        </List>
-                    </LeftNav>
-                    <div id="page-content-wrapper">
-                        {content}
-                    </div>
+                <div className="header">
+                    bylt
+                </div>
+                <div className="nav">
+                    {this.state.modules.map(module => <ModuleTree key={module.name} depth={1} module={module} handle_select={this.handleSelect} selectedModule={this.state.selectedModule} />)}
+                </div>
+                <div className="editor">
+                    {content}
                 </div>
 			</div>
 		);

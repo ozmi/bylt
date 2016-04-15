@@ -1,6 +1,6 @@
 package bylt.core
 
-import spray.json._
+import spray.json.{JsArray, _}
 
 object JsonProtocol extends DefaultJsonProtocol {
 
@@ -28,108 +28,129 @@ object JsonProtocol extends DefaultJsonProtocol {
             }
     }
 
+    implicit object ValueFormat extends RootJsonFormat[Value] {
+        def write (value : Value) : JsValue =
+            value match {
+                case NumberValue (v) =>
+                    JsNumber (v)
+                case StringValue (v) =>
+                    JsString (v)
+                case BooleanValue (v) =>
+                    JsBoolean (v)
+            }
+        def read (value : JsValue) : Value =
+            value match {
+                case JsNumber (v) =>
+                    NumberValue (v)
+                case JsString (v) =>
+                    StringValue (v)
+                case JsBoolean (v) =>
+                    BooleanValue (v)
+            }
+    }
+
     implicit object ExprFormat extends RootJsonFormat[Expr] {
         def write (expr : Expr) : JsValue =
             expr match {
                 case Var (name) =>
-                    JsObject ("Var" -> JsArray (Vector (name.toJson)))
-                case Const (value) =>
-                    JsObject ("Const" -> JsArray (Vector (value.toJson)))
+                    JsObject ("var" -> JsArray (Vector (name.toJson)))
+                case Ref (value) =>
+                    JsObject ("ref" -> JsArray (Vector (value.toJson)))
+                case Literal (value) =>
+                    JsObject ("literal" -> JsArray (Vector (value.toJson)))
                 case Apply (fun, args) =>
-                    JsObject ("Apply" -> JsArray (Vector (fun.toJson, args.toJson)))
+                    JsObject ("apply" -> JsArray (Vector (fun.toJson, args.toJson)))
                 case Lambda (args, body) =>
-                    JsObject ("Lambda" -> JsArray (Vector (args.toJson, body.toJson)))
+                    JsObject ("lambda" -> JsArray (Vector (args.toJson, body.toJson)))
             }
         def read (value : JsValue) : Expr =
             value match {
-                case JsObject (fields) if fields contains "Var" =>
-                    val JsArray (Vector (name)) = fields ("Var")
+                case JsObject (fields) if fields contains "var" =>
+                    val JsArray (Vector (name)) = fields ("var")
                     Var (name.convertTo [Name])
-                case JsObject (fields) if fields contains "Const" =>
-                    val JsArray (Vector (qname)) = fields ("Const")
-                    Const (qname.convertTo [QName])
-                case JsObject (fields) if fields contains "Apply" =>
-                    val JsArray (Vector (fun, JsArray (args))) = fields ("Apply")
+                case JsObject (fields) if fields contains "ref" =>
+                    val JsArray (Vector (qname)) = fields ("ref")
+                    Ref (qname.convertTo [QName])
+                case JsObject (fields) if fields contains "literal" =>
+                    val JsArray (Vector (value)) = fields ("literal")
+                    Literal (value.convertTo [Value])
+                case JsObject (fields) if fields contains "apply" =>
+                    val JsArray (Vector (fun, JsArray (args))) = fields ("apply")
                     Apply (fun.convertTo [Expr], args map {_.convertTo [Expr]})
-                case JsObject (fields) if fields contains "Lambda" =>
-                    val JsArray (Vector (JsArray (args), body)) = fields ("Lambda")
+                case JsObject (fields) if fields contains "lambda" =>
+                    val JsArray (Vector (JsArray (args), body)) = fields ("lambda")
                     Lambda (args map {_.convertTo [Name]}, body.convertTo [Expr])
             }
     }
 
-    implicit object TypeFormat extends RootJsonFormat[Type] {
-        def write (tpe : Type) : JsValue =
-            tpe match {
-                case TypeRef (qname) =>
-                    JsObject ("TypeRef" -> JsArray (Vector (qname.toJson)))
+    implicit object TypeExprFormat extends RootJsonFormat[TypeExpr] {
+        def write (expr : TypeExpr) : JsValue =
+            expr match {
+                case TypeVar (name) =>
+                    JsObject ("type_var" -> JsArray (Vector (name.toJson)))
+                case TypeRef (value) =>
+                    JsObject ("type_ref" -> JsArray (Vector (value.toJson)))
+                case TypeApply (const, args) =>
+                    JsObject ("type_apply" -> JsArray (Vector (const.toJson, args.toJson)))
+                case TypeLambda (args, body) =>
+                    JsObject ("type_lambda" -> JsArray (Vector (args.toJson, body.toJson)))
                 case TopType () =>
-                    JsObject ("TopType" -> JsArray ())
+                    JsObject ("top_type" -> JsArray ())
                 case BottomType () =>
-                    JsObject ("BottomType" -> JsArray ())
+                    JsObject ("bottom_type" -> JsArray ())
                 case UnitType () =>
-                    JsObject ("UnitType" -> JsArray ())
+                    JsObject ("unit_type" -> JsArray ())
+                case LabeledType () =>
+                    JsObject ("labeled_type" -> JsArray ())
                 case LambdaType (arg, ret) =>
-                    JsObject ("LambdaType" -> JsArray (Vector (arg.toJson, ret.toJson)))
+                    JsObject ("lambda_type" -> JsArray (Vector (arg.toJson, ret.toJson)))
                 case TupleType (elems) =>
-                    JsObject ("TupleType" -> JsArray (Vector (elems.toJson)))
+                    JsObject ("tuple_type" -> JsArray (Vector (elems.toJson)))
                 case RecordType (fields) =>
                     val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
-                    JsObject ("RecordType" -> JsArray (Vector (jsFields)))
+                    JsObject ("record_type" -> JsArray (Vector (jsFields)))
                 case SumType (members) =>
-                    JsObject ("SumType" -> JsArray (Vector (members.toJson)))
-                case OptionType (elem) =>
-                    JsObject ("OptionType" -> JsArray (Vector (elem.toJson)))
-                case ManyType (elem, sequential, unique) =>
-                    JsObject ("ManyType" -> JsArray (Vector (elem.toJson, sequential.toJson, unique.toJson)))
-                case RestrictedType (base, predicate) =>
-                    JsObject ("RestrictedType" -> JsArray (Vector (base.toJson, predicate.toJson)))
-                case StructuralType (fields) =>
-                    val jsFields = JsArray (fields map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
-                    JsObject ("StructuralType" -> JsArray (Vector (jsFields)))
-                case TemporalType (elem) =>
-                    JsObject ("TemporalType" -> JsArray (Vector (elem.toJson)))
+                    val jsMembers = JsArray (members map {case (name, value) => JsArray (Vector (name.toJson, value.toJson))})
+                    JsObject ("sum_type" -> JsArray (Vector (jsMembers)))
             }
-        def read (value : JsValue) : Type =
+        def read (value : JsValue) : TypeExpr =
             value match {
-                case JsObject (fields) if fields contains "TypeRef" =>
-                    val JsArray (Vector (qname)) = fields ("TypeRef")
+                case JsObject (fields) if fields contains "type_var" =>
+                    val JsArray (Vector (name)) = fields ("type_var")
+                    TypeVar (name.convertTo [Name])
+                case JsObject (fields) if fields contains "type_ref" =>
+                    val JsArray (Vector (qname)) = fields ("type_ref")
                     TypeRef (qname.convertTo [QName])
-                case JsObject (fields) if fields contains "TopType" =>
-                    val JsArray (Vector ()) = fields ("TopType")
+                case JsObject (fields) if fields contains "type_apply" =>
+                    val JsArray (Vector (jsConst, JsArray (jsArgs))) = fields ("type_apply")
+                    TypeApply (jsConst.convertTo [QName], jsArgs map {_.convertTo [TypeExpr]})
+                case JsObject (fields) if fields contains "type_lambda" =>
+                    val JsArray (Vector (JsArray (jsArgs), jsBody)) = fields ("type_lambda")
+                    TypeLambda (jsArgs map {_.convertTo [Name]}, jsBody.convertTo [TypeExpr])
+                case JsObject (fields) if fields contains "top_type" =>
+                    val JsArray (Vector ()) = fields ("top_type")
                     TopType ()
-                case JsObject (fields) if fields contains "BottomType" =>
-                    val JsArray (Vector ()) = fields ("BottomType")
+                case JsObject (fields) if fields contains "bottom_type" =>
+                    val JsArray (Vector ()) = fields ("bottom_type")
                     BottomType ()
-                case JsObject (fields) if fields contains "UnitType" =>
-                    val JsArray (Vector ()) = fields ("UnitType")
+                case JsObject (fields) if fields contains "unit_type" =>
+                    val JsArray (Vector ()) = fields ("unit_type")
                     UnitType ()
-                case JsObject (fields) if fields contains "LambdaType" =>
-                    val JsArray (Vector (jsArg, jsRet)) = fields ("LambdaType")
-                    LambdaType (jsArg.convertTo [Type], jsRet.convertTo [Type])
-                case JsObject (fields) if fields contains "TupleType" =>
-                    val JsArray (Vector (JsArray (tupleFields))) = fields ("TupleType")
-                    TupleType (tupleFields map {_.convertTo [Type]})
-                case JsObject (fields) if fields contains "RecordType" =>
-                    val JsArray (Vector (JsArray (jsFields))) = fields ("RecordType")
-                    RecordType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [Type])})
-                case JsObject (fields) if fields contains "SumType" =>
-                    val JsArray (Vector (JsArray (unionMembers))) = fields ("SumType")
-                    SumType (unionMembers map {_.convertTo [QName]})
-                case JsObject (fields) if fields contains "OptionType" =>
-                    val JsArray (Vector (elem)) = fields ("OptionType")
-                    OptionType (elem.convertTo [Type])
-                case JsObject (fields) if fields contains "ManyType" =>
-                    val JsArray (Vector (elem, JsBoolean (sequential), JsBoolean (unique))) = fields ("ManyType")
-                    ManyType (elem.convertTo [Type], sequential, unique)
-                case JsObject (fields) if fields contains "RestrictedType" =>
-                    val JsArray (Vector (base, predicate)) = fields ("RestrictedType")
-                    RestrictedType (base.convertTo [Type], predicate.convertTo [Expr])
-                case JsObject (fields) if fields contains "StructuralType" =>
-                    val JsArray (Vector (JsArray (jsFields))) = fields ("StructuralType")
-                    StructuralType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [Type])})
-                case JsObject (fields) if fields contains "TemporalType" =>
-                    val JsArray (Vector (elem)) = fields ("TemporalType")
-                    TemporalType (elem.convertTo [Type])
+                case JsObject (fields) if fields contains "labeled_type" =>
+                    val JsArray (Vector ()) = fields ("labeled_type")
+                    UnitType ()
+                case JsObject (fields) if fields contains "lambda_type" =>
+                    val JsArray (Vector (jsArg, jsRet)) = fields ("lambda_type")
+                    LambdaType (jsArg.convertTo [TypeExpr], jsRet.convertTo [TypeExpr])
+                case JsObject (fields) if fields contains "tuple_type" =>
+                    val JsArray (Vector (JsArray (tupleFields))) = fields ("tuple_type")
+                    TupleType (tupleFields map {_.convertTo [TypeExpr]})
+                case JsObject (fields) if fields contains "record_type" =>
+                    val JsArray (Vector (JsArray (jsFields))) = fields ("record_type")
+                    RecordType (jsFields map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [TypeExpr])})
+                case JsObject (fields) if fields contains "sum_type" =>
+                    val JsArray (Vector (JsArray (unionMembers))) = fields ("sum_type")
+                    SumType (unionMembers map {case JsArray (Vector (name, tpe)) => (name.convertTo [Name], tpe.convertTo [TypeExpr])})
             }
     }
 
@@ -143,7 +164,7 @@ object JsonProtocol extends DefaultJsonProtocol {
             val Seq (jsType, jsValue) =
                 value.asJsObject.getFields("type", "value")
             Declaration (
-                tpe   = if (jsType == JsNull) None else Some (jsType.convertTo [Type]),
+                tpe   = if (jsType == JsNull) None else Some (jsType.convertTo [TypeExpr]),
                 value = if (jsValue == JsNull) None else Some (jsValue.convertTo [Expr])
             )
         }

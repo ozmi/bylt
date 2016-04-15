@@ -6,7 +6,7 @@ case class Module (
     decls : Map [Name, Declaration])
 
 case class Declaration (
-    tpe : Option[Type],
+    tpe : Option[TypeExpr],
     value : Option[Expr])
 
 object Module {
@@ -23,7 +23,7 @@ object Module {
 
         val decls =
             for (jsonFile <- rootDir.listFiles if jsonFile.isFile && (jsonFile.getName endsWith ".json")) yield {
-                val declName = Name.fromString ((jsonFile.getName.split ("\\.").dropRight (1)).mkString)
+                val declName = Name.fromString (jsonFile.getName.split ("\\.").dropRight (1).mkString)
                 val decl = io.Source.fromFile (jsonFile).mkString.parseJson.convertTo [Declaration]
                 declName -> decl
             }
@@ -109,14 +109,14 @@ object Module {
 
 abstract class ModuleDecl (val qname : QName) {
 
-    private var _typeDecls : Map [Name, () => Type] = Map.empty
+    private var _typeDecls : Map [Name, () => TypeExpr] = Map.empty
 
     def typeRef (name : Name) : TypeRef =
         typeDecl (name) {
             TypeRef (qname / name)
         }
 
-    def typeDecl (name : Name) (tpeInit : => Type) : TypeRef = {
+    def typeDecl (name : Name) (tpeInit : => TypeExpr) : TypeRef = {
         val fullName = qname / name
         _typeDecls = _typeDecls + (name, () => tpeInit)
         TypeRef (fullName)

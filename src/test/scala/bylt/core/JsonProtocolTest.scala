@@ -11,7 +11,7 @@ class JsonProtocolTest extends FunSuite  with Checkers {
     implicit override val generatorDrivenConfig =
         PropertyCheckConfig (minSize = 0, maxSize = 40, workers = 4)
 
-    implicit val arbExpr = Arbitrary.expr
+    implicit val arbExpr = ArbitraryExpr.arb
 
     test ("Expr to and from json are equivalent") {
         check { (expr: Expr) =>
@@ -21,17 +21,17 @@ class JsonProtocolTest extends FunSuite  with Checkers {
         }
     }
 
-    implicit val arbType = Arbitrary.tpe
+    implicit val arbType = ArbitraryType.arb
 
     test ("Type to and from json are equivalent") {
-        check { (tpe: Type) =>
+        check { (tpe: TypeExpr) =>
             val jsonAst = tpe.toJson
-            val tpe2 = jsonAst.convertTo [Type]
+            val tpe2 = jsonAst.convertTo [TypeExpr]
             tpe == tpe2
         }
     }
 
-    implicit val arbModule = Arbitrary.module
+    implicit val arbModule = ArbitraryModule.arb
 
     test ("Module to and from json are equivalent") {
         check { (module : Module) =>
